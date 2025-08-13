@@ -1,0 +1,14 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ordersdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: zyz
+    password: zyz703
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MySQLDialect
