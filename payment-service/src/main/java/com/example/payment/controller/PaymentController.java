@@ -19,21 +19,21 @@ public class PaymentController {
 
     @GetMapping public List<Payment> all() { return svc.all(); }
 
-    @GetMapping("/{id}") public Payment get(@PathVariable Long id) { return svc.get(id); }
+    @GetMapping("/{id}") public Payment get(@PathVariable("id") Long id) { return svc.get(id); }
 
     @PostMapping public Payment create(@Valid @RequestBody PaymentCreateRequest req) { return svc.create(req); }
 
     @PatchMapping("/{id}/status")
-    public Payment updateStatus(@PathVariable Long id, @Valid @RequestBody PaymentUpdateStatusRequest req) {
+    public Payment updateStatus(@PathVariable("id") Long id, @Valid @RequestBody PaymentUpdateStatusRequest req) {
         return svc.updateStatus(id, req);
     }
 
     @PostMapping("/{id}/refund")
-    public Payment refund(@PathVariable Long id, @Valid @RequestBody RefundRequest req) {
+    public Payment refund(@PathVariable("id") Long id, @Valid @RequestBody RefundRequest req) {
         return svc.refund(id, req.amountCents());
     }
 
-    @DeleteMapping("/{id}") public ResponseEntity<?> delete(@PathVariable Long id) {
+    @DeleteMapping("/{id}") public ResponseEntity<?> delete(@PathVariable("id") Long id) {
         svc.delete(id); return ResponseEntity.noContent().build();
     }
 }

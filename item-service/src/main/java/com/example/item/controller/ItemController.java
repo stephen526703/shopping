@@ -19,16 +19,16 @@ public class ItemController {
 
     @GetMapping public List<Item> all() { return svc.all(); }
 
-    @GetMapping("/{id}") public Item get(@PathVariable String id) { return svc.get(id); }
+    @GetMapping("/{id}") public Item get(@PathVariable("id") String id) { return svc.get(id); }
 
     @PostMapping public Item create(@Valid @RequestBody ItemCreateRequest req) { return svc.create(req); }
 
-    @PutMapping("/{id}") public Item update(@PathVariable String id, @RequestBody ItemUpdateRequest req) {
+    @PutMapping("/{id}") public Item update(@PathVariable("id") String id, @RequestBody ItemUpdateRequest req) {
         return svc.update(id, req);
     }
 
     @PatchMapping("/{id}/stock")
-    public Item stock(@PathVariable String id, @RequestBody StockUpdateRequest req) {
+    public Item stock(@PathVariable("id") String id, @RequestBody StockUpdateRequest req) {
         return svc.applyStockDelta(id, req.delta());
     }
 
