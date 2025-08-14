@@ -19,3 +19,6 @@ clients:
 topics:
   order-created: ${TOPIC_ORDER_CREATED:orders.order.created}
   payment-processed: ${TOPIC_PAYMENT_PROCESSED:payments.payment.processed}
+
+jwt:
+  secret: ${JWT_SECRET}

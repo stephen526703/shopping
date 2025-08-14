@@ -21,3 +21,6 @@ spring:
 topics:
   payment-processed: ${TOPIC_PAYMENT_PROCESSED:payments.payment.processed}
   payment-reversed:  ${TOPIC_PAYMENT_REVERSED:payments.payment.reversed}
+
+jwt:
+  secret: ${JWT_SECRET}

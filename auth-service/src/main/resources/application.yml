@@ -8,5 +8,5 @@ spring:
       ddl-auto: update
     database-platform: org.hibernate.dialect.MySQLDialect
 jwt:
-  secret: "change-me-32+chars-secret-key-1234567890"
+  secret: ${JWT_SECRET}
   ttl-seconds: 3600
