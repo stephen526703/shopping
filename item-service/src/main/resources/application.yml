@@ -1,0 +1,10 @@
+server:
+  port: 8083
+
+spring:
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/itemsdb}
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
