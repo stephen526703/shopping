@@ -16,8 +16,7 @@ import java.time.OffsetDateTime;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Payment {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, length = 36)
@@ -29,7 +28,7 @@ public class Payment {
     @Column(nullable = false, length = 8)
     private String currency;
 
-    @Column(unique = true, nullable = false, length = 128)
+    @Column(nullable = false, length = 64)
     private String reference;
 
     @Enumerated(EnumType.STRING)
@@ -43,5 +42,4 @@ public class Payment {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
-
 }
