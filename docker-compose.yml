@@ -24,14 +24,14 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: root
-    ports: ["3306:3306"]
+    ports: ["3307:3306"]
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql-init:/docker-entrypoint-initdb.d
 
   mongodb:
     image: mongo:7
-    ports: ["27017:27017"]
+    ports: ["27018:27017"]
     volumes:
       - mongo_data:/data/db
 
@@ -46,7 +46,8 @@ services:
   auth-service:
     build:
       context: .
-      dockerfile: auth-service/Dockerfile
+      dockerfile: Dockerfile
+      target: auth-runtime
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/authdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -59,7 +60,8 @@ services:
   account-service:
     build:
       context: .
-      dockerfile: account-service/Dockerfile
+      dockerfile: Dockerfile
+      target: account-runtime
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/accountdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -73,7 +75,8 @@ services:
   item-service:
     build:
       context: .
-      dockerfile: item-service/Dockerfile
+      dockerfile: Dockerfile
+      target: item-runtime
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/${MONGO_DB}
@@ -84,7 +87,8 @@ services:
   order-service:
     build:
       context: .
-      dockerfile: order-service/Dockerfile
+      dockerfile: Dockerfile
+      target: order-runtime
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BROKER}
@@ -99,7 +103,8 @@ services:
   payment-service:
     build:
       context: .
-      dockerfile: payment-service/Dockerfile
+      dockerfile: Dockerfile
+      target: payment-runtime
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BROKER}
