@@ -31,9 +31,8 @@ public class PaymentProcessedListener {
     private String paymentProcessedTopic;
 
     @KafkaListener(
-            topics = "#{__listener.paymentProcessedTopic}",
-            groupId = "order-service",
-            containerFactory = "paymentProcessedKafkaFactory"
+            topics = "${topics.payment-processed:payment-processed}",
+            groupId = "${spring.kafka.consumer.group-id:order-service}"
     )
     public void handle(PaymentProcessedEvent evt) {
         UUID orderId = evt.orderId();
