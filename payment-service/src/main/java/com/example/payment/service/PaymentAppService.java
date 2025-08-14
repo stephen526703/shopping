@@ -8,7 +8,6 @@ import com.example.payment.repo.PaymentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class PaymentAppService {

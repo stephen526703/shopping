@@ -7,7 +7,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(
@@ -28,10 +27,10 @@ public class Payment {
     private Long amountCents;
 
     @Column(nullable = false, length = 8)
-    private String currency; // "USD"
+    private String currency;
 
     @Column(unique = true, nullable = false, length = 128)
-    private String reference; // idempotency key
+    private String reference;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)
