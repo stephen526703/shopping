@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
@@ -55,7 +53,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
     depends_on: [ mysql ]
-    ports: [ "8081:8081" ]
+    ports: [ "8081:8080" ]
 
   account-service:
     build:
@@ -70,7 +68,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       AUTH_SERVICE_URL: http://auth-service:8081
     depends_on: [ mysql, auth-service ]
-    ports: ["8082:8082"]
+    ports: ["8082:8080"]
 
   item-service:
     build:
@@ -82,7 +80,7 @@ services:
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/${MONGO_DB}
       JWT_SECRET: ${JWT_SECRET}
     depends_on: [ mongodb ]
-    ports: ["8083:8083"]
+    ports: ["8083:8080"]
 
   order-service:
     build:
@@ -98,7 +96,7 @@ services:
       ACCOUNT_SERVICE_URL: http://account-service:8082
       JWT_SECRET: ${JWT_SECRET}
     depends_on: [ kafka, cassandra, item-service, account-service ]
-    ports: ["8084:8084"]
+    ports: ["8084:8080"]
 
   payment-service:
     build:
@@ -113,7 +111,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
     depends_on: [ kafka, mysql ]
-    ports: ["8085:8085"]
+    ports: ["8085:8080"]
 
 volumes:
   mysql_data:
