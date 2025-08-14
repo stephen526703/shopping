@@ -1,7 +1,11 @@
 package com.example.payment.domain;
 
+import com.example.common.types.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -17,28 +21,28 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Store UUID as BINARY(16) in MySQL; Hibernate 6 handles UUID↔binary
-    @Column(columnDefinition = "BINARY(16)", nullable = false)
-    private UUID orderId;
+    @Column(nullable = false, length = 36)
+    private String orderId;
 
     @Column(nullable = false)
     private Long amountCents;
 
-    @Column(nullable = false, length = 64)
-    private String currency; // e.g., "USD"
+    @Column(nullable = false, length = 8)
+    private String currency; // "USD"
 
-    @Column(nullable = false, length = 128)
-    private String reference; // idempotency/business ref
+    @Column(unique = true, nullable = false, length = 128)
+    private String reference; // idempotency key
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)
-    private String status; // PENDING, PAID, REFUNDED, FAILED
+    private PaymentStatus status = PaymentStatus.PENDING;
 
-    @Column(nullable = false)
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
 
-    @Column(nullable = false)
-    private OffsetDateTime updatedAt = OffsetDateTime.now();
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
 
-    @PreUpdate
-    void onUpdate() { this.updatedAt = OffsetDateTime.now(); }
 }

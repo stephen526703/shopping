@@ -1,5 +1,6 @@
 package com.example.payment.service;
 
+import com.example.common.types.PaymentStatus;
 import com.example.payment.domain.Payment;
 import com.example.payment.dto.PaymentCreateRequest;
 import com.example.payment.dto.PaymentUpdateStatusRequest;
@@ -20,14 +21,13 @@ public class PaymentAppService {
     public Payment get(Long id) { return repo.findById(id).orElseThrow(); }
 
     public Payment create(PaymentCreateRequest r) {
-        // Idempotent by reference
         return repo.findByReference(r.reference()).orElseGet(() -> {
             var p = Payment.builder()
-                    .orderId(r.orderId())
+                    .orderId(String.valueOf(r.orderId()))
                     .amountCents(r.amountCents())
                     .currency(r.currency())
                     .reference(r.reference())
-                    .status("PAID") // for now; later this can be PENDING then captured
+                    .status(PaymentStatus.valueOf("PAID"))
                     .build();
             return repo.save(p);
         });
@@ -35,15 +35,14 @@ public class PaymentAppService {
 
     public Payment updateStatus(Long id, PaymentUpdateStatusRequest req) {
         var p = repo.findById(id).orElseThrow();
-        p.setStatus(req.status());
+        p.setStatus(PaymentStatus.valueOf(req.status()));
         return repo.save(p);
     }
 
     public Payment refund(Long id, long amountCents) {
         var p = repo.findById(id).orElseThrow();
-        // naive: mark REFUNDED if refund covers full amount (adapt later as needed)
-        if (amountCents >= p.getAmountCents()) p.setStatus("REFUNDED");
-        else p.setStatus("PARTIALLY_REFUNDED");
+        if (amountCents >= p.getAmountCents()) p.setStatus(PaymentStatus.valueOf("REFUNDED"));
+        else p.setStatus(PaymentStatus.valueOf("PARTIALLY_REFUNDED"));
         return repo.save(p);
     }
 
