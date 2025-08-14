@@ -14,7 +14,6 @@ public class JwtUtil {
     private final long ttlSeconds;
 
     public JwtUtil(String secret, long ttlSeconds) {
-        // HS256 requires 32+ bytes
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.ttlSeconds = ttlSeconds;
     }
