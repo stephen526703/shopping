@@ -1,6 +1,6 @@
 package com.example.order.dto;
 
-import com.example.order.domain.OrderStatus;
+import com.example.common.types.OrderStatus;
 import jakarta.validation.constraints.Min;
 
 public record OrderUpdateRequest(

@@ -20,7 +20,11 @@ public class OrderController {
     @GetMapping public List<OrderEntity> all() { return svc.all(); }
     @GetMapping("/{id}") public OrderEntity get(@PathVariable("id") UUID id) { return svc.get(id); }
 
-    @PostMapping public OrderEntity create(@Valid @RequestBody OrderCreateRequest req) { return svc.create(req); }
+    @PostMapping
+    public OrderEntity create(@RequestHeader(value = "Idempotency-Key", required = false) String idemKey,
+                              @Valid @RequestBody OrderCreateRequest req) {
+        return svc.create(req, idemKey);
+    }
 
     @PatchMapping("/{id}") public OrderEntity update(@PathVariable("id") UUID id, @RequestBody OrderUpdateRequest req) {
         return svc.update(id, req);
