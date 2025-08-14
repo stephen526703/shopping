@@ -3,9 +3,12 @@ package com.example.auth.controller;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.example.auth.service.AuthAppService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController @RequestMapping("/auth")
 public class AuthController {
@@ -16,6 +19,4 @@ public class AuthController {
     public AuthController(AuthAppService app){ this.app=app; }
     @PostMapping("/register") public ResponseEntity<?> register(@RequestBody RegisterRequest r){ app.register(r.email(), r.password()); return ResponseEntity.ok().build(); }
     @PostMapping("/login") public LoginResponse login(@RequestBody LoginRequest req){ return new LoginResponse(app.login(req.email(), req.password())); }
-    @PostMapping("/refresh") public LoginResponse refresh(@AuthenticationPrincipal User user){ return new LoginResponse(app.refresh(user.getUsername())); }
-    @GetMapping("/me") public ResponseEntity<?> me(@AuthenticationPrincipal User user){ return ResponseEntity.ok(user.getUsername()); }
 }
