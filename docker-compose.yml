@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
@@ -24,57 +25,65 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: root
     ports: ["3306:3306"]
-
-  postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports: ["5432:5432"]
+    volumes:
+      - mysql_data:/var/lib/mysql
 
   mongodb:
     image: mongo:7
     ports: ["27017:27017"]
+    volumes:
+      - mongo_data:/data/db
 
   cassandra:
     image: cassandra:5
     environment:
       - CASSANDRA_START_RPC=true
     ports: ["9042:9042"]
+    volumes:
+      - cassandra_data:/var/lib/cassandra
 
   auth-service:
-    build: ./auth-service
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/authdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET:dev-secret}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on: [ mysql ]
     ports: [ "8081:8081" ]
 
   account-service:
-    build: ./account-service
+    build:
+      context: .
+      dockerfile: account-service/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/accountdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
       AUTH_SERVICE_URL: http://auth-service:8081
-    depends_on: [mysql, auth-service]
+    depends_on: [ mysql, auth-service ]
     ports: ["8082:8082"]
 
   item-service:
-    build: ./item-service
+    build:
+      context: .
+      dockerfile: item-service/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/${MONGO_DB}
-    depends_on: [mongodb]
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on: [ mongodb ]
     ports: ["8083:8083"]
 
   order-service:
-    build: ./order-service
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BROKER}
@@ -82,16 +91,25 @@ services:
       CASSANDRA_KEYSPACE: ${CASSANDRA_KEYSPACE}
       ITEM_SERVICE_URL: http://item-service:8083
       ACCOUNT_SERVICE_URL: http://account-service:8082
-    depends_on: [kafka, cassandra, item-service, account-service]
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on: [ kafka, cassandra, item-service, account-service ]
     ports: ["8084:8084"]
 
   payment-service:
-    build: ./payment-service
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BROKER}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-    depends_on: [kafka, postgres]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/payments?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on: [ kafka, mysql ]
     ports: ["8085:8085"]
+
+volumes:
+  mysql_data:
+  mongo_data:
+  cassandra_data:
