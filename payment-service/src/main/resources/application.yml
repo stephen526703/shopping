@@ -2,8 +2,11 @@ server:
   port: 8085
 
 spring:
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+
   datasource:
-    url: jdbc:mysql://localhost:3306/paymentsdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql:3306/payments?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: zyz
     password: zyz526703
   jpa:
@@ -11,4 +14,10 @@ spring:
       ddl-auto: update
     open-in-view: false
     properties:
-      hibernate.dialect: org.hibernate.dialect.MySQLDialect
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+topics:
+  payment-processed: ${TOPIC_PAYMENT_PROCESSED:payments.payment.processed}
+  payment-reversed:  ${TOPIC_PAYMENT_REVERSED:payments.payment.reversed}

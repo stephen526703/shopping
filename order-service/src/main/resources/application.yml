@@ -2,13 +2,20 @@ server:
   port: 8084
 
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/ordersdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: zyz
-    password: zyz526703
-  jpa:
-    hibernate:
-      ddl-auto: update
-    open-in-view: false
-    properties:
-      hibernate.dialect: org.hibernate.dialect.MySQLDialect
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+
+  cassandra:
+    contact-points: ${CASSANDRA_CONTACT_POINTS:cassandra}
+    keyspace-name: ${CASSANDRA_KEYSPACE:orders}
+    port: ${CASSANDRA_PORT:9042}
+    local-datacenter: ${CASSANDRA_LOCAL_DC:datacenter1}
+    schema-action: create_if_not_exists
+
+clients:
+  item:
+    url: ${ITEM_SERVICE_URL:http://item-service:8083}
+
+topics:
+  order-created: ${TOPIC_ORDER_CREATED:orders.order.created}
+  payment-processed: ${TOPIC_PAYMENT_PROCESSED:payments.payment.processed}
