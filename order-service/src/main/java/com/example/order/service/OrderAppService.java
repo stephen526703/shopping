@@ -3,7 +3,7 @@ package com.example.order.service;
 import com.example.common.events.OrderCreatedEvent;
 import com.example.common.types.OrderStatus;
 import com.example.order.client.ItemClient;
-import com.example.order.domain.OrderEntity;
+import com.example.order.domain.OrderRow;
 import com.example.order.dto.OrderCreateRequest;
 import com.example.order.dto.OrderUpdateRequest;
 import com.example.order.event.OrderEvent;
@@ -26,73 +26,76 @@ public class OrderAppService {
     private final OrderRepository repo;
     private final ItemClient itemClient;
     private final KafkaTemplate<String, OrderCreatedEvent> orderCreatedTemplate;
-    private final OrderEventRepository eventRepo;
+    private final OrderEventRepository eventRepo; // your existing Cassandra event store
     private final ObjectMapper mapper;
 
     @Value("${topics.order-created}")
     private String orderCreatedTopic;
 
-    public List<OrderEntity> all() { return repo.findAll(); }
+    public List<OrderRow> all() { return repo.findAll(); }
 
-    public OrderEntity get(UUID id) { return repo.findById(id).orElseThrow(); }
+    public OrderRow get(UUID id) { return repo.findById(id).orElseThrow(); }
 
-    public OrderEntity create(OrderCreateRequest r, String idempotencyKey) {
-        // Reserve inventory synchronously; throws if negative stock, etc.
-        itemClient.adjustStock(r.itemId(), new ItemClient.StockUpdateRequest(-r.quantity()));
-
-        // Idempotency: reuse order if key provided and exists
+    public OrderRow create(OrderCreateRequest r, String idempotencyKey) {
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
-            var existing = repo.findAll().stream()
-                    .filter(o -> idempotencyKey.equals(o.getIdempotencyKey()))
-                    .findFirst();
+            var existing = repo.findByIdempotencyKey(idempotencyKey);
             if (existing.isPresent()) return existing.get();
         }
 
-        var o = OrderEntity.builder()
+        // Reserve inventory synchronously; throws if not enough stock
+        itemClient.adjustStock(r.itemId(), new ItemClient.StockUpdateRequest(-r.quantity()));
+
+        var now = Instant.now();
+        var row = OrderRow.builder()
+                .orderId(UUID.randomUUID())
                 .accountId(r.accountId())
                 .itemId(r.itemId())
                 .quantity(r.quantity())
                 .totalAmountCents(r.totalAmountCents() == null ? 0L : r.totalAmountCents())
                 .status(OrderStatus.NEW)
                 .idempotencyKey(idempotencyKey)
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
-        o = repo.save(o);
+
+        row = repo.save(row);
 
         var evt = new OrderCreatedEvent(
-                o.getId(),
-                o.getAccountId(),
-                o.getItemId(),
-                o.getQuantity(),
-                o.getTotalAmountCents(),
-                idempotencyKey
+                row.getOrderId(),
+                row.getAccountId(),
+                row.getItemId(),
+                row.getQuantity(),
+                row.getTotalAmountCents(),
+                row.getIdempotencyKey()
         );
-        orderCreatedTemplate.send(orderCreatedTopic, o.getId().toString(), evt);
+        orderCreatedTemplate.send(orderCreatedTopic, row.getOrderId().toString(), evt);
 
         try {
             eventRepo.save(OrderEvent.builder()
-                    .id(UUID.randomUUID())
-                    .orderId(o.getId())
+                    .orderId(row.getOrderId())
                     .type("ORDER_CREATED")
                     .payloadJson(mapper.writeValueAsString(evt))
-                    .createdAt(Instant.now())
+                    .createdAt(now)
                     .build());
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {}
 
-        return o;
+        return row;
     }
 
-    public OrderEntity update(UUID id, OrderUpdateRequest r) {
-        var o = repo.findById(id).orElseThrow();
-        if (r.quantity() != null) o.setQuantity(r.quantity());
-        if (r.totalAmountCents() != null) o.setTotalAmountCents(r.totalAmountCents());
-        if (r.status() != null) o.setStatus(r.status());
-        return repo.save(o);
+    public OrderRow update(UUID id, OrderUpdateRequest r) {
+        var row = repo.findById(id).orElseThrow();
+        if (r.quantity() != null) row.setQuantity(r.quantity());
+        if (r.totalAmountCents() != null) row.setTotalAmountCents(r.totalAmountCents());
+        if (r.status() != null) row.setStatus(r.status());
+        row.setUpdatedAt(Instant.now());
+        return repo.save(row);
     }
 
-    public OrderEntity cancel(UUID id) {
-        var o = repo.findById(id).orElseThrow();
-        o.setStatus(OrderStatus.CANCELLED);
-        return repo.save(o);
+    public OrderRow cancel(UUID id) {
+        var row = repo.findById(id).orElseThrow();
+        row.setStatus(OrderStatus.CANCELLED);
+        row.setUpdatedAt(Instant.now());
+        return repo.save(row);
     }
 
     public void delete(UUID id) { repo.deleteById(id); }
