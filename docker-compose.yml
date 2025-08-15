@@ -105,7 +105,7 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BROKER}
       CASSANDRA_CONTACT_POINTS: cassandra
       CASSANDRA_KEYSPACE: ${CASSANDRA_KEYSPACE}
-      ITEM_SERVICE_URL: http://item-service:8083
+      ITEM_SERVICE_URL: http://item-service:8080
       ACCOUNT_SERVICE_URL: http://account-service:8082
       JWT_SECRET: ${JWT_SECRET}
       SERVER_PORT: 8080
