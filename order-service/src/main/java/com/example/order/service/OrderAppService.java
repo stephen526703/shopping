@@ -26,7 +26,7 @@ public class OrderAppService {
     private final OrderRepository repo;
     private final ItemClient itemClient;
     private final KafkaTemplate<String, OrderCreatedEvent> orderCreatedTemplate;
-    private final OrderEventRepository eventRepo; // your existing Cassandra event store
+    private final OrderEventRepository eventRepo;
     private final ObjectMapper mapper;
 
     @Value("${topics.order-created}")
@@ -37,7 +37,9 @@ public class OrderAppService {
     public OrderRow get(UUID id) { return repo.findById(id).orElseThrow(); }
 
     public OrderRow create(OrderCreateRequest r, String idempotencyKey) {
-        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            idempotencyKey = UUID.randomUUID().toString();
+        } else {
             var existing = repo.findByIdempotencyKey(idempotencyKey);
             if (existing.isPresent()) return existing.get();
         }
