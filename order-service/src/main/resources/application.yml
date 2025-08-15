@@ -31,3 +31,7 @@ topics:
 
 jwt:
   secret: ${JWT_SECRET}
+
+feign:
+  okhttp:
+    enabled: true
