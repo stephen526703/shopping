@@ -37,7 +37,9 @@ public class OrderAppService {
     public OrderRow get(UUID id) { return repo.findById(id).orElseThrow(); }
 
     public OrderRow create(OrderCreateRequest r, String idempotencyKey) {
-        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            idempotencyKey = UUID.randomUUID().toString();
+        } else {
             var existing = repo.findByIdempotencyKey(idempotencyKey);
             if (existing.isPresent()) return existing.get();
         }
@@ -53,7 +55,7 @@ public class OrderAppService {
                 .quantity(r.quantity())
                 .totalAmountCents(r.totalAmountCents() == null ? 0L : r.totalAmountCents())
                 .status(OrderStatus.NEW)
-                .idempotencyKey(idempotencyKey)
+                .idempotencyKey(idempotencyKey)   // now guaranteed non-null
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
