@@ -86,7 +86,11 @@ public class OrderAppService {
 
     public OrderRow update(UUID id, OrderUpdateRequest r) {
         var row = repo.findById(id).orElseThrow();
-        if (r.quantity() != null) row.setQuantity(r.quantity());
+        if (r.quantity() != null && !r.quantity().equals(row.getQuantity())) {
+            int delta = r.quantity() - row.getQuantity();
+            itemClient.adjustStock(row.getItemId(), new ItemClient.StockUpdateRequest(-delta));
+            row.setQuantity(r.quantity());
+        }
         if (r.totalAmountCents() != null) row.setTotalAmountCents(r.totalAmountCents());
         if (r.status() != null) row.setStatus(r.status());
         row.setUpdatedAt(Instant.now());
@@ -95,8 +99,12 @@ public class OrderAppService {
 
     public OrderRow cancel(UUID id) {
         var row = repo.findById(id).orElseThrow();
-        row.setStatus(OrderStatus.CANCELLED);
-        row.setUpdatedAt(Instant.now());
+        if (row.getStatus() != OrderStatus.CANCELLED) {
+            itemClient.adjustStock(row.getItemId(), new ItemClient.StockUpdateRequest(+row.getQuantity()));
+            row.setStatus(OrderStatus.CANCELLED);
+            row.setUpdatedAt(Instant.now());
+            row = repo.save(row);
+        }
         return repo.save(row);
     }
 

@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(name = "item-service", url = "${clients.item.url}")
 public interface ItemClient {
     record StockUpdateRequest(int delta) {}
-    @PatchMapping("/items/{id}/stock")
-    void adjustStock(@PathVariable("id") String id, @RequestBody StockUpdateRequest req);
+    @PostMapping(value = "/items/{id}/stock/adjust", consumes = "application/json")
+    Item adjustStock(@PathVariable("id") String id,
+                     @RequestBody StockUpdateRequest req);
+
+    record Item(String id, String name, Integer stock) {}
 }

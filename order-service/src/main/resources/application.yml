@@ -23,7 +23,7 @@ spring:
 
 clients:
   item:
-    url: ${ITEM_SERVICE_URL:http://item-service:8083}
+    url: ${ITEM_SERVICE_URL:http://item-service:8080}
 
 topics:
   order-created: ${TOPIC_ORDER_CREATED:orders.order.created}
@@ -33,5 +33,5 @@ jwt:
   secret: ${JWT_SECRET}
 
 feign:
-  okhttp:
-    enabled: true
+  httpclient.enabled: true
+  okhttp.enabled: false

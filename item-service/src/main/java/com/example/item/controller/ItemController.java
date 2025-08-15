@@ -27,8 +27,8 @@ public class ItemController {
         return svc.update(id, req);
     }
 
-    @PatchMapping("/{id}/stock")
-    public Item stock(@PathVariable("id") String id, @RequestBody StockUpdateRequest req) {
+    @PostMapping("/{id}/stock/adjust")
+    public Item stockAdjust(@PathVariable("id") String id, @RequestBody StockUpdateRequest req) {
         return svc.applyStockDelta(id, req.delta());
     }
 
