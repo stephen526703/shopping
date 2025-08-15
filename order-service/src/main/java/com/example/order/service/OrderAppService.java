@@ -55,7 +55,7 @@ public class OrderAppService {
                 .quantity(r.quantity())
                 .totalAmountCents(r.totalAmountCents() == null ? 0L : r.totalAmountCents())
                 .status(OrderStatus.NEW)
-                .idempotencyKey(idempotencyKey)
+                .idempotencyKey(idempotencyKey)   // now guaranteed non-null
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
